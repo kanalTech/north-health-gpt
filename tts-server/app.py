@@ -24,7 +24,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
 from huggingface_hub import hf_hub_download
-from piper import PiperVoice
+from piper import PiperVoice, SynthesisConfig
 
 # ── Config ──────────────────────────────────────────────────────────
 MODEL_REPO = "adab-tech/murya-piper-hausa-tts"
@@ -107,8 +107,9 @@ def tts(req: TTSRequest) -> Response:
     # Synthesize into an in-memory WAV
     buf = io.BytesIO()
     try:
+        syn_config = SynthesisConfig(speaker_id=req.speaker_id)
         with wave.open(buf, "wb") as wav_out:
-            voice.synthesize(text, wav_out, speaker_id=req.speaker_id)
+            voice.synthesize_wav(text, wav_out, syn_config=syn_config)
     except Exception as exc:
         log.exception("Synthesis failed")
         raise HTTPException(status_code=500, detail=f"Synthesis failed: {exc}") from exc
