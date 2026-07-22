@@ -7,8 +7,7 @@ North Health GPT's tts.php over HTTP.
 Speaker map (from model card):
     F2:0  M3:1  M2:2  F4:3  M4:4  F1:5  M1:6  F3:7
 
-Default speaker = 6 (M1) — authoritative male, for Radio Nigeria Kaduna
-broadcaster persona.
+Default speaker = 7 (F3) — female broadcaster voice.
 """
 
 from __future__ import annotations
@@ -28,7 +27,7 @@ from piper import PiperVoice, SynthesisConfig
 
 # ── Config ──────────────────────────────────────────────────────────
 MODEL_REPO = "adab-tech/murya-piper-hausa-tts"
-DEFAULT_SPEAKER_ID = 6            # M1 — authoritative male
+DEFAULT_SPEAKER_ID = 7            # F3 — female broadcaster voice
 MAX_TEXT_LEN = 2000
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -107,7 +106,10 @@ def tts(req: TTSRequest) -> Response:
     # Synthesize into an in-memory WAV
     buf = io.BytesIO()
     try:
-        syn_config = SynthesisConfig(speaker_id=req.speaker_id)
+        syn_config = SynthesisConfig(
+            speaker_id=req.speaker_id,
+            length_scale=1.1,
+        )
         with wave.open(buf, "wb") as wav_out:
             voice.synthesize_wav(text, wav_out, syn_config=syn_config)
     except Exception as exc:
