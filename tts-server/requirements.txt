@@ -1,5 +1,5 @@
-piper-tts
-onnxruntime
 fastapi
 uvicorn[standard]
+pydantic
 huggingface_hub
+piper-tts
