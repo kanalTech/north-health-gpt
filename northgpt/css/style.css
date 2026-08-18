@@ -1,0 +1,586 @@
+/* North Health GPT — Stylesheet (v5.0) */
+/* Canva design implementation | Overlay emergency | Strict mode separation | UI-UX Pro Max */
+
+:root {
+    --bg-page:        #EAF7EF;
+    --bg-app:         #FFFFFF;
+    --bg-header:      #0E1C2B;
+    --text-header:    #FFFFFF;
+    --green:          #16A34A;
+    --green-dark:     #15803D;
+    --green-soft:     #EAF9F0;
+    --green-line:     #86D9A6;
+    --red:            #C81E1E;
+    --red-dark:       #991B1B;
+    --red-soft:       #FDECEC;
+    --text-primary:   #14281D;
+    --text-secondary: #5B6B62;
+    --bubble-user:    #C7D2CB;
+    --bubble-assist:  #FFFFFF;
+    --line:           #D6E5DC;
+    --radius:         14px;
+    --radius-lg:      20px;
+    --shadow:         0 4px 20px rgba(4,31,26,.06);
+    --font-ui:        'Plus Jakarta Sans','Atkinson Hyperlegible',system-ui,sans-serif;
+    --font-read:      'Atkinson Hyperlegible','Plus Jakarta Sans',system-ui,sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+    font-family: var(--font-ui);
+    background: var(--bg-page);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+button, textarea { font: inherit; }
+button { cursor: pointer; }
+
+button:focus-visible, a:focus-visible, textarea:focus-visible {
+    outline: 3px solid #0369A1;
+    outline-offset: 2px;
+}
+
+/* UNICEF strip */
+.eval-strip {
+    background: #FCEFC7;
+    color: #8A5A00;
+    text-align: center;
+    padding: 9px 14px;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    flex-shrink: 0;
+}
+.eval-strip strong { color: #6B4600; }
+
+/* App container fills viewport, single column, no page scroll */
+.app-container {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    max-width: 820px;
+    margin: 0 auto;
+    background: var(--bg-app);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+/* Header */
+.app-header {
+    background: var(--bg-header);
+    color: var(--text-header);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+}
+.header-brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo-icon {
+    width: 46px; height: 46px;
+    background: rgba(255,255,255,.08);
+    border-radius: 12px;
+    display: grid; place-items: center;
+    color: #34D399;
+    flex-shrink: 0;
+}
+.logo-icon svg { width: 26px; height: 26px; }
+.brand-text { min-width: 0; }
+.header-brand h1 { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
+.header-brand .subtitle { font-size: 0.76rem; color: #9FB0C0; margin-top: 2px; }
+.header-status {
+    display: flex; align-items: center; gap: 7px;
+    color: #34D399; font-size: 0.82rem; font-weight: 600;
+    flex-shrink: 0;
+}
+.sabon-chat-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s;
+}
+.sabon-chat-btn:hover { background: rgba(255, 255, 255, 0.2); }
+.status-text small { color: #7FB9A0; font-weight: 500; }
+.status-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: #34D399;
+    box-shadow: 0 0 0 3px rgba(52,211,153,.2);
+}
+
+/* Controls block (mode + cards + emergency) — auto-hides once chat starts */
+.controls-block {
+    padding: 14px 16px 4px;
+    flex-shrink: 0;
+    background: var(--bg-app);
+}
+.controls-block.hidden { display: none; }
+
+/* Mode switcher */
+.mode-switcher { display: flex; justify-content: center; margin-bottom: 14px; }
+.pill-tabs {
+    display: flex; gap: 4px;
+    background: #EEF2F0;
+    padding: 5px;
+    border-radius: 999px;
+    width: 100%;
+    max-width: 460px;
+}
+.tab-btn {
+    flex: 1;
+    border: none; background: transparent;
+    padding: 11px 14px;
+    border-radius: 999px;
+    font-size: 0.92rem; font-weight: 700;
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s, color .2s, box-shadow .2s;
+}
+.tab-btn .tab-icon { width: 18px; height: 18px; }
+.tab-btn.active { background: #FFFFFF; color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+
+/* Topic cards — green outline, 3+2 grid like the design */
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    margin-bottom: 9px;
+}
+.shortcut-card {
+    background: #FFFFFF;
+    border: 1.5px solid var(--green-line);
+    border-radius: 10px;
+    padding: 11px 12px;
+    display: flex; align-items: center; gap: 9px;
+    text-align: left;
+    transition: background .15s, border-color .15s, transform .1s;
+    min-height: 58px;
+}
+.shortcut-card:hover { background: var(--green-soft); border-color: var(--green); }
+.shortcut-card:active { transform: scale(.985); }
+.card-icon { font-size: 1.25rem; flex-shrink: 0; line-height: 1; }
+.card-text { display: flex; flex-direction: column; min-width: 0; }
+.card-text strong { font-size: 0.86rem; font-weight: 700; color: var(--text-primary); line-height: 1.15; }
+.card-text small { font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px; }
+
+/* Emergency trigger bar (collapsed) */
+.emergency-wrap { display: flex; }
+.emergency-trigger {
+    flex: 1;
+    background: var(--red);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    box-shadow: 0 3px 10px rgba(200,30,30,.25);
+    transition: background .15s;
+}
+.emergency-trigger:hover { background: var(--red-dark); }
+.emergency-left { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.emergency-icon { font-size: 1.15rem; }
+.emergency-title { font-size: 0.92rem; font-weight: 800; }
+.emergency-title small { font-weight: 600; opacity: .85; font-size: 0.8rem; }
+.emergency-arrow { font-size: 1rem; transition: transform .2s; }
+.emergency-wrap.open .emergency-arrow { transform: rotate(180deg); }
+
+/* Chat area — holds viewport + emergency overlay */
+.chat-area {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-app);
+    padding: 6px 16px 12px;
+}
+
+/* Chat viewport */
+.chat-viewport {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--green-soft);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Welcome card (auto-hides once chat starts) */
+.welcome-card {
+    margin: auto;
+    text-align: center;
+    padding: 20px;
+    max-width: 460px;
+}
+.welcome-bot { font-size: 3rem; line-height: 1; margin-bottom: 12px; }
+.welcome-card h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 8px; }
+.welcome-card p { font-size: 0.95rem; color: var(--text-secondary); line-height: 1.5; font-family: var(--font-read); }
+.welcome-card.hidden { display: none; }
+
+.messages-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Message bubbles */
+.message-bubble {
+    max-width: 82%;
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    font-family: var(--font-read);
+    word-wrap: break-word;
+}
+.message-bubble.user {
+    align-self: flex-end;
+    background: var(--bubble-user);
+    color: #1F3128;
+    border-bottom-right-radius: 5px;
+}
+.message-bubble.assistant {
+    align-self: flex-start;
+    background: var(--bubble-assist);
+    border: 1px solid var(--line);
+    color: var(--text-primary);
+    border-bottom-left-radius: 5px;
+}
+.message-bubble.system {
+    align-self: center;
+    background: #FFF8E6;
+    border: 1px solid #F5D98B;
+    color: #8A5A00;
+    font-size: 0.85rem;
+    max-width: 92%;
+    text-align: center;
+}
+
+/* Loading dots */
+.loading-bubble { padding: 12px 16px !important; max-width: fit-content; }
+.dots-pulse { display: inline-flex; gap: 6px; }
+.dots-pulse span {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--green);
+    animation: dotsBounce 1.4s infinite ease-in-out both;
+}
+.dots-pulse span:nth-child(1){ animation-delay: -.32s; }
+.dots-pulse span:nth-child(2){ animation-delay: -.16s; }
+@keyframes dotsBounce { 0%,80%,100%{ transform: scale(.4); opacity:.3 } 40%{ transform: scale(1); opacity:1 } }
+
+/* Voice audio bubble */
+.voice-audio-bubble { min-width: 250px; }
+.audio-player-container audio { width: 100%; height: 42px; outline: none; }
+
+/* Referral button */
+.referral-container { margin-top: 10px; }
+.hospital-referral-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--red); color: #FFFFFF;
+    text-decoration: none;
+    font-size: 0.84rem; font-weight: 700;
+    padding: 10px 15px; border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(200,30,30,.25);
+    transition: background .15s;
+}
+.hospital-referral-btn:hover { background: var(--red-dark); }
+
+/* Emergency overlay — covers the chat area only when open */
+.emergency-overlay {
+    display: none;
+    position: absolute;
+    top: 6px; left: 16px; right: 16px;
+    z-index: 30;
+    background: rgba(200,30,30,.16);
+    backdrop-filter: blur(2px);
+    border: 1.5px solid var(--red);
+    border-radius: var(--radius-lg);
+    padding: 12px;
+    max-height: calc(100% - 18px);
+    overflow-y: auto;
+    box-shadow: 0 12px 32px rgba(120,10,10,.28);
+}
+.emergency-overlay.open { display: flex; flex-direction: column; gap: 7px; }
+.emerg-item {
+    background: rgba(255,255,255,.96);
+    border: 1px solid #F0B4B4;
+    border-radius: 11px;
+    padding: 13px 15px;
+    text-align: left;
+    font-size: 0.92rem; font-weight: 600;
+    color: var(--red-dark);
+    display: flex; align-items: center; gap: 10px;
+    min-height: 48px;
+    transition: background .15s, border-color .15s;
+}
+.emerg-item span { font-size: 1.1rem; }
+.emerg-item:hover, .emerg-item:active { background: #FFFFFF; border-color: var(--red); }
+
+/* Input container */
+.input-container {
+    padding: 14px 16px;
+    background: var(--bg-app);
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+}
+.input-panel { display: none; }
+.input-panel.active { display: flex; flex-direction: column; align-items: center; }
+
+/* Mic */
+.mic-wrapper { position: relative; margin-bottom: 8px; }
+.mic-button {
+    width: 66px; height: 66px; border-radius: 50%;
+    background: #1E6FE0; color: #FFFFFF; border: none;
+    display: grid; place-items: center;
+    box-shadow: 0 6px 18px rgba(30,111,224,.4);
+    transition: transform .15s, background .2s;
+    position: relative; z-index: 2;
+}
+.mic-button:hover { transform: scale(1.04); }
+.mic-button.recording { background: var(--red); box-shadow: 0 6px 18px rgba(200,30,30,.45); }
+.mic-svg { width: 28px; height: 28px; }
+.recording-pulse {
+    position: absolute; inset: -6px; border-radius: 50%;
+    border: 3px solid var(--red); opacity: 0; z-index: 1;
+}
+.recording-pulse.active { animation: pulseWave 1.5s infinite; }
+@keyframes pulseWave { 0%{ transform: scale(1); opacity:.8 } 100%{ transform: scale(1.45); opacity:0 } }
+.voice-status-text { font-size: 0.88rem; color: var(--text-secondary); text-align: center; }
+
+/* Text input */
+.text-input-wrapper {
+    display: flex; align-items: center; width: 100%; gap: 8px;
+    background: #F4F8F6; border: 1px solid var(--line);
+    border-radius: 26px; padding: 6px 6px 6px 16px;
+}
+.text-input-wrapper textarea {
+    flex: 1; border: none; background: transparent; outline: none; resize: none;
+    font-size: 0.95rem; max-height: 160px; line-height: 1.5; overflow-y: auto;
+    font-family: var(--font-read);
+}
+.send-button {
+    background: #0E1C2B; color: #FFFFFF; border: none;
+    width: 44px; height: 44px; border-radius: 50%;
+    display: grid; place-items: center; flex-shrink: 0;
+    transition: transform .15s, background .2s;
+}
+.send-button:hover { transform: scale(1.05); background: #1a3550; }
+.send-button svg { width: 19px; height: 19px; }
+
+/* App footer */
+.app-footer {
+    padding: 9px; text-align: center;
+    font-size: 0.72rem; color: var(--text-secondary);
+    background: #F4F8F6; border-top: 1px solid var(--line);
+    flex-shrink: 0;
+}
+
+/* ── Tablet ───────────────────────────────────────────── */
+@media (max-width: 720px) {
+    .eval-strip { font-size: 0.74rem; padding: 8px 10px; }
+    .app-header { padding: 12px 14px; }
+    .header-brand h1 { font-size: 1.15rem; }
+    .header-brand .subtitle { font-size: 0.7rem; }
+    .controls-block { padding: 12px 12px 4px; }
+    .chat-area { padding: 6px 12px 10px; }
+    .emergency-overlay { left: 12px; right: 12px; }
+}
+
+/* ── Phone ────────────────────────────────────────────── */
+@media (max-width: 520px) {
+    .header-brand h1 { font-size: 1.05rem; }
+    .logo-icon { width: 40px; height: 40px; }
+    .logo-icon svg { width: 22px; height: 22px; }
+    .tab-btn { font-size: 0.86rem; padding: 10px 10px; }
+    
+    .shortcuts-grid { grid-template-columns: repeat(2, 1fr); }
+    /* Make the meningitis/TB row centered like the design: last item spans if odd */
+    .shortcuts-grid .shortcut-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    
+    .shortcut-card { min-height: 48px; padding: 8px 10px; }
+    .card-icon { font-size: 1.1rem; }
+    .card-text strong { font-size: 0.82rem; }
+    .card-text small { font-size: 0.68rem; }
+    
+    .message-bubble { max-width: 88%; font-size: 0.92rem; }
+    .welcome-card h2 { font-size: 1.2rem; }
+    .welcome-bot { font-size: 2.5rem; }
+    
+    .status-text small { display: none; }
+    .sabon-chat-btn { padding: 4px 8px; font-size: 0.7rem; }
+    
+    .input-container { padding: 10px 12px; }
+    
+    /* Hide the footer on phones to prevent vertical overlap when keyboard is open or screen is short */
+    .app-footer { display: none; }
+}
+
+@media (max-width: 380px) {
+    .shortcuts-grid { grid-template-columns: 1fr 1fr; }
+    .card-text small { display: none; }
+}
+
+/* Accessibility: reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+
+/* ── Live voice: streaming bubbles ──────────────────────────────────────────
+   Text arrives token by token during a live turn, so the bubble updates in
+   place instead of a new bubble appearing for every fragment. */
+.message-bubble .bubble-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+.message-bubble.assistant .bubble-text:empty::after {
+    content: '…';
+    opacity: .45;
+}
+
+/* ── Exact Canva target UI adjustments ───────────────────────────────────────
+   Only the elements explicitly requested for the redesign are adjusted here. */
+.app-container { max-width: 925px; }
+
+.app-header {
+    padding: 14px 18px;
+}
+.header-brand h1,
+.header-brand .subtitle {
+    white-space: nowrap;
+}
+.header-brand h1 { font-size: 1.18rem; }
+.header-brand .subtitle { font-size: 0.70rem; }
+.header-status { margin-left: auto; }
+.status-dot, .status-text { display: none; }
+.sabon-chat-btn {
+    margin-left: 0;
+    min-width: 120px;
+    padding: 7px 18px 6px;
+    border-radius: 22px;
+    background: #1F700B;
+    color: #FFFFFF;
+    border: 1.5px solid #72D43D;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    line-height: 1.05;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+.sabon-chat-btn small {
+    color: #FFFFFF;
+    font-size: 0.68rem;
+    font-weight: 500;
+}
+.sabon-chat-btn:hover { background: #236F0F; }
+
+.shortcuts-grid {
+    grid-template-columns: repeat(3, 1fr);
+    margin-bottom: 0;
+}
+.emergency-wrap {
+    min-width: 0;
+    display: flex;
+}
+.emergency-trigger {
+    width: 100%;
+    min-height: 58px;
+    padding: 11px 12px;
+    border: 1.5px solid var(--green);
+    border-radius: 10px;
+    box-shadow: none;
+}
+.emergency-arrow {
+    color: #72D43D;
+    font-size: 1.55rem;
+    font-weight: 800;
+    line-height: 1;
+}
+.emergency-wrap.open .emergency-arrow { transform: none; }
+
+.chat-area {
+    padding: 6px 16px 12px;
+}
+.chat-viewport {
+    padding: 18px;
+}
+.welcome-card {
+    max-width: none;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+}
+.welcome-card h2 { white-space: nowrap; }
+.welcome-card p { max-width: 620px; }
+
+.message-bubble.assistant {
+    user-select: text;
+    -webkit-user-select: text;
+}
+.message-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 9px;
+    padding: 5px 9px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #F4F8F6;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.message-copy-btn:hover { background: #EAF7EF; }
+
+@media (max-width: 720px) {
+    .app-container { max-width: 100%; }
+    .app-header { padding: 12px 14px; }
+    .header-brand { gap: 10px; }
+    .header-brand h1 { font-size: 1.05rem; }
+    .header-brand .subtitle { font-size: 0.64rem; }
+    .sabon-chat-btn { min-width: 110px; padding-left: 14px; padding-right: 14px; }
+    .controls-block { padding: 12px 12px 4px; }
+    .shortcuts-grid { grid-template-columns: repeat(2, 1fr); }
+    .emergency-trigger { min-height: 48px; }
+    .chat-area { padding: 6px 12px 10px; }
+    .chat-viewport { padding: 12px; }
+    .welcome-card { padding: 36px 18px; }
+    .welcome-card h2 { font-size: 1.2rem; }
+    .welcome-card p { font-size: 0.92rem; }
+}
+
+@media (max-width: 520px) {
+    .header-brand h1 { font-size: 1.00rem; }
+    .header-brand .subtitle { font-size: 0.60rem; }
+    .sabon-chat-btn { min-width: 104px; font-size: 0.72rem; }
+    .sabon-chat-btn small { font-size: 0.62rem; }
+    .shortcuts-grid .shortcut-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .shortcut-card { min-height: 48px; padding: 8px 10px; }
+    .emergency-trigger { min-height: 48px; padding: 8px 10px; }
+    .emergency-title { font-size: 0.82rem; }
+    .emergency-title small { font-size: 0.68rem; }
+    .welcome-card { min-height: 100%; padding: 42px 12px; }
+    .welcome-card h2 { white-space: nowrap; font-size: 1.15rem; }
+    .welcome-card p { max-width: 95%; }
+}

@@ -1,0 +1,203 @@
+{
+  "_meta": {
+    "project": "North Health GPT",
+    "version": "1.0.0-schema",
+    "rfps": "RFPS-NYH-2026-503931",
+    "description": "Preliminary schema for the North Health GPT hospital referral database. Full 19-state database to be field-compiled and validated during Months 2–5 of the investment period.",
+    "coverage": "Northern Nigeria — 19 states (preliminary Kano State entries included)",
+    "license": "MIT — https://github.com/kanaltech/north-health-gpt/blob/main/LICENSE",
+    "last_updated": "2026-07"
+  },
+
+  "schema": {
+    "facility": {
+      "id": "string — unique facility identifier (e.g. KN-SEC-001)",
+      "name": "string — official government facility name",
+      "type": "enum — PHC | Secondary | Tertiary | Teaching | EmOC | DOTS | TFC | Emergency",
+      "state": "string — Northern Nigerian state name",
+      "lga": "string — Local Government Area name",
+      "ward": "string — ward name (optional)",
+      "address": "string — street address or landmark description",
+      "coordinates": {
+        "lat": "number — latitude (decimal degrees)",
+        "lon": "number — longitude (decimal degrees)"
+      },
+      "capabilities": {
+        "eoc": "boolean — Emergency Obstetric Care capability",
+        "lumbar_puncture": "boolean — lumbar puncture / CSF analysis",
+        "scbu": "boolean — Special Care Baby Unit / neonatal care",
+        "sam_ward": "boolean — Severe Acute Malnutrition treatment ward",
+        "therapeutic_feeding_centre": "boolean — Outpatient Therapeutic Programme (OTP) / TFC",
+        "dots_tb": "boolean — DOTS-certified TB testing and treatment (GeneXpert)",
+        "blood_transfusion": "boolean — blood transfusion available",
+        "surgery": "boolean — surgical capability",
+        "x_ray": "boolean — X-ray available",
+        "laboratory": "boolean — basic laboratory services"
+      },
+      "conditions_served": [
+        "enum array — MATERNAL | NEWBORN | MENINGITIS | SAM | TB"
+      ],
+      "hours": "string — operating hours (e.g. 24/7 | 8:00-16:00 Mon-Fri)",
+      "phone": "string — facility phone number (if available)",
+      "verified": "boolean — on-site field verification completed",
+      "verification_date": "string — ISO date of last field verification",
+      "data_source": "string — source of facility data (e.g. FMOH, state MoH, field verification)"
+    }
+  },
+
+  "referral_logic": {
+    "description": "Condition-to-facility-type mapping used by the North Health GPT referral engine",
+    "mappings": {
+      "MATERNAL_EMERGENCY": {
+        "required_capability": "eoc",
+        "minimum_facility_type": "Secondary",
+        "preferred_facility_type": "EmOC",
+        "urgency": "IMMEDIATE",
+        "max_travel_time_minutes": 120
+      },
+      "NEWBORN_DANGER": {
+        "required_capability": "scbu",
+        "minimum_facility_type": "Secondary",
+        "preferred_facility_type": "Tertiary",
+        "urgency": "IMMEDIATE",
+        "max_travel_time_minutes": 60
+      },
+      "MENINGITIS": {
+        "required_capability": "lumbar_puncture",
+        "minimum_facility_type": "Secondary",
+        "preferred_facility_type": "Tertiary",
+        "urgency": "IMMEDIATE",
+        "max_travel_time_minutes": 120
+      },
+      "SAM": {
+        "required_capability": "therapeutic_feeding_centre",
+        "minimum_facility_type": "PHC",
+        "preferred_facility_type": "TFC",
+        "urgency": "SAME_DAY",
+        "max_travel_time_minutes": 240
+      },
+      "TUBERCULOSIS": {
+        "required_capability": "dots_tb",
+        "minimum_facility_type": "PHC",
+        "preferred_facility_type": "DOTS",
+        "urgency": "WITHIN_48H",
+        "max_travel_time_minutes": 480
+      }
+    }
+  },
+
+  "sample_facilities": [
+    {
+      "id": "KN-TER-001",
+      "name": "Aminu Kano Teaching Hospital",
+      "type": "Teaching",
+      "state": "Kano",
+      "lga": "Nassarawa",
+      "ward": "Sharada",
+      "address": "Zaria Road, Kano, Kano State",
+      "coordinates": {
+        "lat": 12.0022,
+        "lon": 8.5919
+      },
+      "capabilities": {
+        "eoc": true,
+        "lumbar_puncture": true,
+        "scbu": true,
+        "sam_ward": true,
+        "therapeutic_feeding_centre": false,
+        "dots_tb": true,
+        "blood_transfusion": true,
+        "surgery": true,
+        "x_ray": true,
+        "laboratory": true
+      },
+      "conditions_served": ["MATERNAL", "NEWBORN", "MENINGITIS", "SAM", "TB"],
+      "hours": "24/7",
+      "phone": "+234-64-660460",
+      "verified": false,
+      "verification_date": null,
+      "data_source": "Public knowledge — to be field-verified Month 2"
+    },
+    {
+      "id": "KN-TER-002",
+      "name": "Murtala Muhammad Specialist Hospital",
+      "type": "Tertiary",
+      "state": "Kano",
+      "lga": "Municipal",
+      "ward": "Fagge",
+      "address": "Muritala Mohammed Way, Kano, Kano State",
+      "coordinates": {
+        "lat": 12.0001,
+        "lon": 8.5180
+      },
+      "capabilities": {
+        "eoc": true,
+        "lumbar_puncture": true,
+        "scbu": true,
+        "sam_ward": true,
+        "therapeutic_feeding_centre": false,
+        "dots_tb": true,
+        "blood_transfusion": true,
+        "surgery": true,
+        "x_ray": true,
+        "laboratory": true
+      },
+      "conditions_served": ["MATERNAL", "NEWBORN", "MENINGITIS", "SAM", "TB"],
+      "hours": "24/7",
+      "phone": null,
+      "verified": false,
+      "verification_date": null,
+      "data_source": "Public knowledge — to be field-verified Month 2"
+    },
+    {
+      "id": "KN-PHC-001",
+      "name": "Dorayi Primary Health Centre",
+      "type": "PHC",
+      "state": "Kano",
+      "lga": "Gwale",
+      "ward": "Dorayi",
+      "address": "Dorayi, Gwale LGA, Kano State",
+      "coordinates": {
+        "lat": 11.9788,
+        "lon": 8.4915
+      },
+      "capabilities": {
+        "eoc": false,
+        "lumbar_puncture": false,
+        "scbu": false,
+        "sam_ward": false,
+        "therapeutic_feeding_centre": true,
+        "dots_tb": true,
+        "blood_transfusion": false,
+        "surgery": false,
+        "x_ray": false,
+        "laboratory": true
+      },
+      "conditions_served": ["SAM", "TB"],
+      "hours": "8:00-16:00 Mon-Fri, 8:00-14:00 Sat",
+      "phone": null,
+      "verified": false,
+      "verification_date": null,
+      "data_source": "FMOH facility list — to be field-verified Month 2"
+    }
+  ],
+
+  "19_state_coverage_plan": {
+    "description": "Full 19-state database to be compiled by contracted Field Researcher during Months 2–5",
+    "states": [
+      "Kano", "Katsina", "Kaduna", "Sokoto", "Kebbi", "Zamfara",
+      "Niger", "Kwara", "Borno", "Yobe", "Adamawa", "Gombe",
+      "Bauchi", "Plateau", "Nasarawa", "Kogi", "Taraba",
+      "Jigawa", "FCT"
+    ],
+    "target_facility_count": "1500+",
+    "verification_rate": "minimum 20% on-site field verification per state (30% for Kano State)",
+    "data_sources": [
+      "Nigeria Federal Ministry of Health facility register",
+      "State Ministries of Health facility lists",
+      "NHIS-accredited facility database",
+      "On-site field verification by contracted Community Field Researcher",
+      "UNICEF Nigeria country office facility data (where available)"
+    ]
+  }
+}

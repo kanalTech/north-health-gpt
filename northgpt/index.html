@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>North Health GPT — Muryar Kiwon Lafiya Ta Arewacin Nijeriya</title>
+    <meta name="description" content="Voice-first Hausa AI health guidance — Northern Nigeria | UNICEF Innovation Fund">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- UNICEF Evaluation Banner -->
+    <div class="eval-strip">
+        <span>📌 <strong>UNICEF Venture Fund Evaluation Demo</strong> — RFPS-NYH-2026-503931 | KANAL TECH Kano</span>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"></path>
+                        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>North Health GPT</h1>
+                    <p class="subtitle">Muryar Kiwon Lafiya Ta Arewacin Nijeriya</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <button type="button" class="sabon-chat-btn" onclick="resetChat()" aria-label="Sabon Chat">
+                    <span>Sabon Chat</span>
+                    <small>(New Chat)</small>
+                </button>
+            </div>
+        </header>
+
+        <!-- Controls block: mode toggle + cards + emergency (auto-hides once chat starts) -->
+        <div class="controls-block" id="controls-block">
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+                <div class="pill-tabs" role="tablist" aria-label="Zabi yanayin magana">
+                    <button type="button" class="tab-btn active" id="tab-voice" role="tab" aria-selected="true" onclick="switchMode('voice')">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="22"></line>
+                        </svg>
+                        <span>Murya (Voice)</span>
+                    </button>
+                    <button type="button" class="tab-btn" id="tab-text" role="tab" aria-selected="false" onclick="switchMode('text')">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>Rubutu (Text)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5 Primary Topic Cards -->
+            <div class="shortcuts-grid">
+                <button type="button" class="shortcut-card" onclick="sendCardTopic('Mata Masu Juna Biyu')">
+                    <span class="card-icon" aria-hidden="true">🤰</span>
+                    <span class="card-text"><strong>Mata Masu Juna Biyu</strong><small>(Maternal Emergency)</small></span>
+                </button>
+                <button type="button" class="shortcut-card" onclick="sendCardTopic('Lafiyar Jarirai')">
+                    <span class="card-icon" aria-hidden="true">👶</span>
+                    <span class="card-text"><strong>Lafiyar Jarirai</strong><small>(Newborn Health)</small></span>
+                </button>
+                <button type="button" class="shortcut-card" onclick="sendCardTopic('Ciwon Tamowa')">
+                    <span class="card-icon" aria-hidden="true">🥣</span>
+                    <span class="card-text"><strong>Ciwon Tamowa</strong><small>(Malnutrition)</small></span>
+                </button>
+                <button type="button" class="shortcut-card" onclick="sendCardTopic('Ciwon Sankarau')">
+                    <span class="card-icon" aria-hidden="true">🦠</span>
+                    <span class="card-text"><strong>Ciwon Sankarau</strong><small>(Meningitis)</small></span>
+                </button>
+                <button type="button" class="shortcut-card" onclick="sendCardTopic('Tarin TB')">
+                    <span class="card-icon" aria-hidden="true">🫁</span>
+                    <span class="card-text"><strong>Tarin TB</strong><small>(Tuberculosis)</small></span>
+                </button>
+
+                <!-- Emergency (collapsed; opens as overlay) -->
+                <div class="emergency-wrap" id="emergency-wrap">
+                    <button type="button" class="emergency-trigger" id="emergency-trigger" onclick="toggleEmergency()" aria-expanded="false" aria-controls="emergency-overlay">
+                        <span class="emergency-left">
+                            <span class="emergency-icon" aria-hidden="true">🚨</span>
+                            <span class="emergency-title">Taimakon Gaggawa <small>(Emergency)</small></span>
+                        </span>
+                        <span class="emergency-arrow" id="emergency-arrow" aria-hidden="true">↓</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat area -->
+        <main class="chat-area" id="chat-area">
+            <!-- Emergency overlay (absolute, covers chat) -->
+            <div class="emergency-overlay" id="emergency-overlay" role="menu" aria-label="Zabin gaggawa">
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Baya Numfashi')"><span aria-hidden="true">👶</span> Jariri Baya Numfashi</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Ya Ki Shan Nono')"><span aria-hidden="true">👶</span> Jariri Ya Ki Shan Nono</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Yana Karkarwa')"><span aria-hidden="true">👶</span> Jariri Yana Karkarwa</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jinin Haihuwa Ya Ki Tsayawa')"><span aria-hidden="true">🤰</span> Jinin Haihuwa Ya Ki Tsayawa</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Mace Tana Karkarwa')"><span aria-hidden="true">🤰</span> Mace Tana Karkarwa</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Wuya Ya Sankare')"><span aria-hidden="true">🦠</span> Wuya Ya Sankare</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Zazzabi Mai Tsanani')"><span aria-hidden="true">🌡️</span> Zazzabi Mai Tsanani</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Wahalar Numfashi')"><span aria-hidden="true">🫁</span> Wahalar Numfashi</button>
+            </div>
+
+            <div class="chat-viewport" id="chat-viewport">
+                <div class="welcome-card" id="welcome-card">
+                    <div class="welcome-bot" aria-hidden="true">🤖</div>
+                    <h2>Barka Da Zuwa North Health GPT</h2>
+                    <p>Neman shawara ko amsar tambaya game da kiwon lafiya a harshen Hausa.</p>
+                </div>
+                <div id="messages-list" class="messages-list"></div>
+            </div>
+        </main>
+
+        <!-- Input -->
+        <footer class="input-container">
+            <div id="voice-input-panel" class="input-panel active">
+                <div class="mic-wrapper">
+                    <button type="button" id="mic-btn" class="mic-button" onclick="toggleRecording()" aria-label="Danna mic domin yin magana">
+                        <svg class="mic-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                    <div class="recording-pulse" id="rec-pulse" aria-hidden="true"></div>
+                </div>
+                <div class="voice-status-text" id="voice-status">Danna mic domin yin magana</div>
+            </div>
+
+            <div id="text-input-panel" class="input-panel">
+                <div class="text-input-wrapper">
+                    <textarea id="text-input" placeholder="Rubuta tambayarku ta kiwon lafiya anan..." rows="1" onkeydown="handleKeyDown(event)" oninput="autoGrowTextarea(this)" aria-label="Rubuta tambaya"></textarea>
+                    <button type="button" id="send-btn" class="send-button" onclick="handleSendText()" aria-label="Aika">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </footer>
+
+        <div class="app-footer">
+            Developed by <strong>KANAL TECH</strong> (RC-8659947), Kano, Nigeria.
+        </div>
+    </div>
+
+    <script src="js/live-voice.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
