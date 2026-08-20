@@ -6,9 +6,9 @@
     "description": "Preliminary schema for the North Health GPT hospital referral database. Full 19-state database to be field-compiled and validated during Months 2–5 of the investment period.",
     "coverage": "Northern Nigeria — 19 states (preliminary Kano State entries included)",
     "license": "MIT — https://github.com/kanaltech/north-health-gpt/blob/main/LICENSE",
-    "last_updated": "2026-07"
+    "last_updated": "2026-07",
+    "prototype_data_notice": "Sample facilities in this repository are illustrative prototype records and are not verified for live referral decisions. All facility names, capabilities, coordinates and service details must be validated against authoritative sources before production use."
   },
-
   "schema": {
     "facility": {
       "id": "string — unique facility identifier (e.g. KN-SEC-001)",
@@ -44,7 +44,6 @@
       "data_source": "string — source of facility data (e.g. FMOH, state MoH, field verification)"
     }
   },
-
   "referral_logic": {
     "description": "Condition-to-facility-type mapping used by the North Health GPT referral engine",
     "mappings": {
@@ -85,7 +84,6 @@
       }
     }
   },
-
   "sample_facilities": [
     {
       "id": "KN-TER-001",
@@ -111,12 +109,20 @@
         "x_ray": true,
         "laboratory": true
       },
-      "conditions_served": ["MATERNAL", "NEWBORN", "MENINGITIS", "SAM", "TB"],
+      "conditions_served": [
+        "MATERNAL",
+        "NEWBORN",
+        "MENINGITIS",
+        "SAM",
+        "TB"
+      ],
       "hours": "24/7",
       "phone": "+234-64-660460",
       "verified": false,
       "verification_date": null,
-      "data_source": "Public knowledge — to be field-verified Month 2"
+      "data_source": "Public knowledge — to be field-verified Month 2",
+      "prototype_record": true,
+      "live_referral_eligible": false
     },
     {
       "id": "KN-TER-002",
@@ -128,7 +134,7 @@
       "address": "Muritala Mohammed Way, Kano, Kano State",
       "coordinates": {
         "lat": 12.0001,
-        "lon": 8.5180
+        "lon": 8.518
       },
       "capabilities": {
         "eoc": true,
@@ -142,12 +148,20 @@
         "x_ray": true,
         "laboratory": true
       },
-      "conditions_served": ["MATERNAL", "NEWBORN", "MENINGITIS", "SAM", "TB"],
+      "conditions_served": [
+        "MATERNAL",
+        "NEWBORN",
+        "MENINGITIS",
+        "SAM",
+        "TB"
+      ],
       "hours": "24/7",
       "phone": null,
       "verified": false,
       "verification_date": null,
-      "data_source": "Public knowledge — to be field-verified Month 2"
+      "data_source": "Public knowledge — to be field-verified Month 2",
+      "prototype_record": true,
+      "live_referral_eligible": false
     },
     {
       "id": "KN-PHC-001",
@@ -173,22 +187,41 @@
         "x_ray": false,
         "laboratory": true
       },
-      "conditions_served": ["SAM", "TB"],
+      "conditions_served": [
+        "SAM",
+        "TB"
+      ],
       "hours": "8:00-16:00 Mon-Fri, 8:00-14:00 Sat",
       "phone": null,
       "verified": false,
       "verification_date": null,
-      "data_source": "FMOH facility list — to be field-verified Month 2"
+      "data_source": "FMOH facility list — to be field-verified Month 2",
+      "prototype_record": true,
+      "live_referral_eligible": false
     }
   ],
-
   "19_state_coverage_plan": {
     "description": "Full 19-state database to be compiled by contracted Field Researcher during Months 2–5",
     "states": [
-      "Kano", "Katsina", "Kaduna", "Sokoto", "Kebbi", "Zamfara",
-      "Niger", "Kwara", "Borno", "Yobe", "Adamawa", "Gombe",
-      "Bauchi", "Plateau", "Nasarawa", "Kogi", "Taraba",
-      "Jigawa", "FCT"
+      "Kano",
+      "Katsina",
+      "Kaduna",
+      "Sokoto",
+      "Kebbi",
+      "Zamfara",
+      "Niger",
+      "Kwara",
+      "Borno",
+      "Yobe",
+      "Adamawa",
+      "Gombe",
+      "Bauchi",
+      "Plateau",
+      "Nasarawa",
+      "Kogi",
+      "Taraba",
+      "Jigawa",
+      "FCT"
     ],
     "target_facility_count": "1500+",
     "verification_rate": "minimum 20% on-site field verification per state (30% for Kano State)",

@@ -36,37 +36,78 @@ const PLAYER_WORKLET = `
   class PlayerProcessor extends AudioWorkletProcessor {
     constructor() {
       super();
-      this.buffer = [];
+      // Chunked queue — fixes the O(n) flat-array shift() that caused cracking.
+      // Old code called buffer.shift() 128 times per render block (~187x/sec),
+      // each an O(n) rewrite of the whole array. Chunked queue is O(1) amortized.
+      this.queue = [];      // Array of Float32Array chunks waiting to play
+      this.current = null;  // Chunk currently being consumed
+      this.offset = 0;      // Read position inside current chunk
       this.isPlaying = false;
-      this.port.onmessage = (e) => {
-        if (e.data && e.data.type === 'clear') {
-          this.buffer = [];
+      this.chunkCount   = 0;      // chunks received since last clear/reset
+      this.prebuffering = true;   // hold output until 3 chunks have arrived
+      this.PREBUF_CHUNKS = 3;     // wait for 3 chunks before starting playback
+
+      this.port.onmessage = (event) => {
+        const data = event.data;
+
+        if (data && data.type === 'clear') {
+          this.queue = [];
+          this.current = null;
+          this.offset = 0;
           this.isPlaying = false;
+          this.chunkCount   = 0;
+          this.prebuffering = true;
           this.port.postMessage({ isSpeaking: false });
-        } else if (Array.isArray(e.data) || e.data instanceof Float32Array) {
-          for (let i = 0; i < e.data.length; i++) {
-            this.buffer.push(e.data[i]);
+          return;
+        }
+
+        if (data && data.type === 'flush') {
+          this.prebuffering = false;   // force-play whatever is queued
+          return;
+        }
+
+        let chunk = null;
+        if (data instanceof ArrayBuffer) {
+          chunk = new Float32Array(data);
+        } else if (data instanceof Float32Array) {
+          chunk = data;
+        }
+
+        if (chunk && chunk.length > 0) {
+          this.queue.push(chunk);
+          this.chunkCount++;
+          if (this.prebuffering && this.chunkCount >= this.PREBUF_CHUNKS) {
+            this.prebuffering = false;
           }
         }
       };
     }
-    process(inputs, outputs, parameters) {
-      const output = outputs[0];
-      if (!output || output.length === 0) return true;
-      const channel = output[0];
-      const samplesNeeded = channel.length;
-      let hasData = false;
 
-      for (let i = 0; i < samplesNeeded; i++) {
-        if (this.buffer.length > 0) {
-          channel[i] = this.buffer.shift();
-          hasData = true;
-        } else {
-          channel[i] = 0;
-        }
+    process(inputs, outputs) {
+      const output = outputs[0];
+      if (!output || !output[0]) return true;
+      const channel = output[0];
+
+      if (this.prebuffering) {
+        channel.fill(0);
+        return true;
       }
 
-      const nowPlaying = this.buffer.length > 0 || hasData;
+      let hasData = false;
+
+      for (let i = 0; i < channel.length; i++) {
+        // Advance to next chunk when current is exhausted
+        if (!this.current || this.offset >= this.current.length) {
+          this.current = this.queue.shift() || null;
+          this.offset = 0;
+          if (!this.current) { channel[i] = 0; continue; }
+        }
+        channel[i] = this.current[this.offset++];
+        hasData = true;
+      }
+
+      const nowPlaying = hasData || this.queue.length > 0 ||
+                         (this.current !== null && this.offset < this.current.length);
       if (nowPlaying !== this.isPlaying) {
         this.isPlaying = nowPlaying;
         this.port.postMessage({ isSpeaking: nowPlaying });
@@ -138,6 +179,22 @@ function sanitize(text) {
   return { clean, referral: null };
 }
 
+function resampleLinear(input, fromRate, toRate) {
+    if (fromRate === toRate) return input;
+    const ratio = fromRate / toRate;
+    const outputLength = Math.round(input.length / ratio);
+    const output = new Float32Array(outputLength);
+    for (let i = 0; i < outputLength; i++) {
+        const pos = i * ratio;
+        const idx = Math.floor(pos);
+        const frac = pos - idx;
+        const a = input[idx]     !== undefined ? input[idx]     : 0;
+        const b = input[idx + 1] !== undefined ? input[idx + 1] : 0;
+        output[i] = a + frac * (b - a);
+    }
+    return output;
+}
+
 /* ── LiveVoice Singleton ─────────────────────────────────────────────────── */
 
 const LiveVoice = {
@@ -150,199 +207,203 @@ const LiveVoice = {
   mediaStream: null,
   ws: null,
   callbacks: {},
-  turnAudioChunks: [],
   currentReferral: null,
 
   isSpeaking() {
     return this.speaking;
   },
 
-  async start(callbacks = {}) {
+  start(callbacks = {}) {
     this.callbacks = callbacks || {};
     if (this.callbacks.status) this.callbacks.status('connecting');
 
-    try {
-      // 1. Fetch ephemeral token from backend
-      const tokenRes = await fetch('api/token.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!tokenRes.ok) {
-        const errJson = await tokenRes.json().catch(() => ({}));
-        throw new Error(errJson.message || 'Token acquisition failed');
-      }
-      const tokenData = await tokenRes.json();
-      if (tokenData.status !== 'success' || !tokenData.token) {
-        throw new Error(tokenData.message || 'Invalid token response');
-      }
+    return new Promise(async (resolve, reject) => {
+      let resolved = false;
 
-      const liveToken = tokenData.token;
-      const model = tokenData.model || 'gemini-3.1-flash-live-preview';
-
-      // 2. Setup Audio Input Context (16kHz)
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      this.audioContextIn = new AudioCtx({ sampleRate: 16000 });
-      if (this.audioContextIn.state === 'suspended') {
-        await this.audioContextIn.resume();
-      }
-
-      // 3. Setup Audio Output Context (24kHz for Gemini Live audio)
-      this.audioContextOut = new AudioCtx({ sampleRate: 24000 });
-      if (this.audioContextOut.state === 'suspended') {
-        await this.audioContextOut.resume();
-      }
-
-      // 4. Load AudioWorklets via Blobs
-      const captureBlob = new Blob([CAPTURE_WORKLET], { type: 'application/javascript' });
-      const playerBlob = new Blob([PLAYER_WORKLET], { type: 'application/javascript' });
-      await this.audioContextIn.audioWorklet.addModule(URL.createObjectURL(captureBlob));
-      await this.audioContextOut.audioWorklet.addModule(URL.createObjectURL(playerBlob));
-
-      // 5. Setup Capture Node & Player Node
-      this.captureNode = new AudioWorkletNode(this.audioContextIn, 'capture-processor');
-      this.playerNode = new AudioWorkletNode(this.audioContextOut, 'player-processor');
-      this.playerNode.connect(this.audioContextOut.destination);
-
-      this.playerNode.port.onmessage = (e) => {
-        if (e.data && typeof e.data.isSpeaking === 'boolean') {
-          this.speaking = e.data.isSpeaking;
+      try {
+        // 1. Fetch ephemeral token from backend
+        const tokenRes = await fetch('api/token.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!tokenRes.ok) {
+          const errJson = await tokenRes.json().catch(() => ({}));
+          throw new Error(errJson.message || 'Token acquisition failed');
         }
-      };
-
-      // 6. Request Microphone Access
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 16000
+        const tokenData = await tokenRes.json();
+        if (tokenData.status !== 'success' || !tokenData.token) {
+          throw new Error(tokenData.message || 'Invalid token response');
         }
-      });
-      const source = this.audioContextIn.createMediaStreamSource(this.mediaStream);
-      source.connect(this.captureNode);
 
-      // 7. WebSocket setup
-      const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(liveToken)}`;
-      this.ws = new WebSocket(wsUrl);
-      this.turnAudioChunks = [];
-      this.currentReferral = null;
+        const liveToken = tokenData.token;
+        const model = tokenData.model || 'gemini-3.1-flash-live-preview';
 
-      this.ws.onopen = () => {
-        console.log('✅ Connected to Gemini Live WebSocket. Sending setup frame...');
-        const setupFrame = {
-          setup: {
-            model: 'models/' + model
+        // 2. Setup Audio Input Context (16kHz)
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        this.audioContextIn = new AudioCtx({ sampleRate: 16000 });
+        if (this.audioContextIn.state === 'suspended') {
+          await this.audioContextIn.resume();
+        }
+
+        // 3. Setup Audio Output Context (24kHz for Gemini Live audio)
+        this.audioContextOut = new AudioCtx({ sampleRate: 24000 });
+        if (this.audioContextOut.state === 'suspended') {
+          await this.audioContextOut.resume();
+        }
+
+        // 4. Load AudioWorklets via Blobs
+        const captureBlob = new Blob([CAPTURE_WORKLET], { type: 'application/javascript' });
+        const playerBlob = new Blob([PLAYER_WORKLET], { type: 'application/javascript' });
+        await this.audioContextIn.audioWorklet.addModule(URL.createObjectURL(captureBlob));
+        await this.audioContextOut.audioWorklet.addModule(URL.createObjectURL(playerBlob));
+
+        // 5. Setup Capture Node & Player Node
+        this.captureNode = new AudioWorkletNode(this.audioContextIn, 'capture-processor');
+        this.playerNode = new AudioWorkletNode(this.audioContextOut, 'player-processor');
+        this.playerNode.connect(this.audioContextOut.destination);
+
+        this.playerNode.port.onmessage = (e) => {
+          if (e.data && typeof e.data.isSpeaking === 'boolean') {
+            this.speaking = e.data.isSpeaking;
+            // Notify app so the logo can animate in real-time with Leda's audio
+            if (this.callbacks.speaking) this.callbacks.speaking(e.data.isSpeaking);
           }
         };
-        this.ws.send(JSON.stringify(setupFrame));
-      };
 
-      this.ws.onmessage = async (evt) => {
-        let raw = evt.data;
-        if (raw instanceof Blob) {
-          raw = await raw.text();
-        }
-        let data;
-        try {
-          data = JSON.parse(raw);
-        } catch (e) {
-          console.error('Failed to parse WebSocket JSON:', e);
-          return;
-        }
+        // 6. Request Microphone Access
+        this.mediaStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            sampleRate: 16000
+          }
+        });
+        const source = this.audioContextIn.createMediaStreamSource(this.mediaStream);
+        source.connect(this.captureNode);
 
-        if (data.setupComplete) {
-          console.log('✅ Gemini Live Setup Complete.');
-          this.active = true;
-          if (this.callbacks.open) this.callbacks.open();
-          if (this.callbacks.status) this.callbacks.status('connected');
+        // 7. WebSocket setup
+        const wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(liveToken)}`;
+        this.ws = new WebSocket(wsUrl);
+        this.currentReferral = null;
 
-          // Hook mic capture to WebSocket
-          this.captureNode.port.onmessage = (event) => {
-            if (!this.active || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
-            const pcm16 = event.data;
-            const base64Audio = int16ToB64(pcm16);
-            const payload = {
-              realtimeInput: {
-                audio: {
-                  mimeType: 'audio/pcm;rate=16000',
-                  data: base64Audio
-                }
-              }
-            };
-            this.ws.send(JSON.stringify(payload));
+        this.ws.onopen = () => {
+          console.log('✅ Connected to Gemini Live WebSocket. Sending setup frame...');
+          const setupFrame = {
+            setup: {
+              model: 'models/' + model
+            }
           };
-        }
+          this.ws.send(JSON.stringify(setupFrame));
+        };
 
-        if (data.serverContent) {
-          const sc = data.serverContent;
-
-          if (sc.interrupted) {
-            console.log('Gemini Live: turn interrupted');
-            if (this.playerNode) this.playerNode.port.postMessage({ type: 'clear' });
-            this.turnAudioChunks = [];
-            this.currentReferral = null;
-            if (this.callbacks.interrupted) this.callbacks.interrupted();
+        this.ws.onmessage = async (evt) => {
+          let raw = evt.data;
+          if (raw instanceof Blob) {
+            raw = await raw.text();
+          }
+          let data;
+          try {
+            data = JSON.parse(raw);
+          } catch (e) {
+            console.error('Failed to parse WebSocket JSON:', e);
+            return;
           }
 
-          if (sc.modelTurn && sc.modelTurn.parts) {
-            for (const part of sc.modelTurn.parts) {
-              if (part.inlineData && part.inlineData.data) {
-                const pcm16 = b64ToInt16(part.inlineData.data);
-                const float32 = int16ToFloat32(pcm16);
-                // Real-time hearing
-                if (this.playerNode) this.playerNode.port.postMessage(float32);
-                // Accumulate for replayable bubble
-                this.turnAudioChunks.push(float32);
-              }
-              if (part.text) {
-                const m = part.text.match(/\[REFER:(maternal|newborn|infectious|malnutrition|general)\]/i);
-                if (m) {
-                  this.currentReferral = m[1].toLowerCase();
-                  if (this.callbacks.referral) this.callbacks.referral(this.currentReferral);
+          if (data.setupComplete) {
+            console.log('✅ Gemini Live Setup Complete.');
+            this.active = true;
+            if (this.callbacks.open) this.callbacks.open();
+            if (this.callbacks.status) this.callbacks.status('connected');
+            if (!resolved) {
+              resolved = true;
+              resolve();
+            }
+
+            // Hook mic capture to WebSocket
+            this.captureNode.port.onmessage = (event) => {
+              if (!this.active || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+              const pcm16 = event.data;
+              const base64Audio = int16ToB64(pcm16);
+              const payload = {
+                realtimeInput: {
+                  audio: {
+                    mimeType: 'audio/pcm;rate=16000',
+                    data: base64Audio
+                  }
+                }
+              };
+              this.ws.send(JSON.stringify(payload));
+            };
+          }
+
+          if (data.serverContent) {
+            const sc = data.serverContent;
+
+            if (sc.interrupted) {
+              console.log('Gemini Live: turn interrupted');
+              if (this.playerNode) this.playerNode.port.postMessage({ type: 'clear' });
+              this.currentReferral = null;
+              if (this.callbacks.interrupted) this.callbacks.interrupted();
+            }
+
+            if (sc.modelTurn && sc.modelTurn.parts) {
+              for (const part of sc.modelTurn.parts) {
+                if (part.inlineData && part.inlineData.data) {
+                  const pcm16 = b64ToInt16(part.inlineData.data);
+                  const float32  = int16ToFloat32(pcm16);
+                  const rate     = this.audioContextOut ? this.audioContextOut.sampleRate : 24000;
+                  const resampled = resampleLinear(float32, 24000, rate);
+                  if (this.playerNode) this.playerNode.port.postMessage(resampled.buffer, [resampled.buffer]);
+                }
+                if (part.text) {
+                  const m = part.text.match(/\[REFER:(maternal|newborn|infectious|malnutrition|tuberculosis|general)\]/i);
+                  if (m) {
+                    this.currentReferral = m[1].toLowerCase();
+                    if (this.callbacks.referral) this.callbacks.referral(this.currentReferral);
+                  }
                 }
               }
             }
-          }
 
-          if (sc.turnComplete) {
-            if (this.turnAudioChunks.length > 0) {
-              let totalLength = 0;
-              for (let i = 0; i < this.turnAudioChunks.length; i++) {
-                totalLength += this.turnAudioChunks[i].length;
-              }
-              const combined = new Float32Array(totalLength);
-              let offset = 0;
-              for (let i = 0; i < this.turnAudioChunks.length; i++) {
-                combined.set(this.turnAudioChunks[i], offset);
-                offset += this.turnAudioChunks[i].length;
-              }
-              const wavBlob = encodeWAV(combined, 24000);
-              const audioUrl = URL.createObjectURL(wavBlob);
+            if (sc.turnComplete) {
+              if (this.playerNode) this.playerNode.port.postMessage({ type: 'flush' });
+              // Notify app: turn is done. url is null (no WAV replay).
               if (this.callbacks.audioReply) {
-                this.callbacks.audioReply(audioUrl, this.currentReferral);
+                this.callbacks.audioReply(null, this.currentReferral);
               }
-              this.turnAudioChunks = [];
               this.currentReferral = null;
             }
           }
-        }
-      };
+        };
 
-      this.ws.onerror = (err) => {
-        console.error('Live WebSocket error:', err);
-      };
+        this.ws.onerror = (err) => {
+          console.error('Live WebSocket error:', err);
+          if (!resolved) {
+            resolved = true;
+            reject(err);
+          }
+        };
 
-      this.ws.onclose = (evt) => {
-        console.log('Gemini Live WebSocket closed:', evt.code, evt.reason);
+        this.ws.onclose = (evt) => {
+          console.log('Gemini Live WebSocket closed:', evt.code, evt.reason);
+          this.stop();
+          if (this.callbacks.closed) this.callbacks.closed();
+          if (!resolved) {
+            resolved = true;
+            reject(new Error('WebSocket closed before setup: ' + evt.code));
+          }
+        };
+
+      } catch (err) {
+        console.error('LiveVoice start failed:', err);
         this.stop();
-        if (this.callbacks.closed) this.callbacks.closed();
-      };
-
-    } catch (err) {
-      console.error('LiveVoice start failed:', err);
-      this.stop();
-      throw err;
-    }
+        if (!resolved) {
+          resolved = true;
+          reject(err);
+        }
+      }
+    });
   },
 
   sendText(text) {
@@ -397,7 +458,6 @@ const LiveVoice = {
       } catch (_) {}
       this.ws = null;
     }
-    this.turnAudioChunks = [];
     this.currentReferral = null;
   }
 };

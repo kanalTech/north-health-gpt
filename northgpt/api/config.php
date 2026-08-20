@@ -112,23 +112,28 @@ return [
         ],
 
         'newborn' => [
-            'name' => 'Murtala Muhammad Specialist Hospital, Kano',
-            'q' => 'Murtala Muhammad Specialist Hospital Kano',
+            'name' => 'Hasiya Bayero Pediatric Hospital, Kano',
+            'q' => 'Hasiya Bayero Pediatric Hospital Kano',
         ],
 
         'infectious' => [
-            'name' => 'Infectious Disease Hospital, Kano',
-            'q' => 'Infectious Disease Hospital Weatherhead Sabon Gari Kano',
+            'name' => 'Kano Infectious Diseases Hospital, Kano',
+            'q' => 'Infectious Diseases Hospital Kano',
         ],
 
         'malnutrition' => [
-            'name' => 'Murtala Muhammad Specialist Hospital, Kano',
-            'q' => 'Murtala Muhammad Specialist Hospital Kano',
+            'name' => 'Hasiya Bayero Pediatric Hospital, Kano',
+            'q' => 'Hasiya Bayero Pediatric Hospital Kano',
+        ],
+
+        'tuberculosis' => [
+            'name' => 'Zana Hospital (Kano Infectious Diseases Hospital), Kano',
+            'q' => 'Zana Hospital France Road Kano',
         ],
 
         'general' => [
             'name' => 'Aminu Kano Teaching Hospital (AKTH)',
-            'q' => 'Aminu Kano Teaching Hospital Zaria Road Tarauni Kano',
+            'q' => 'Aminu Kano Teaching Hospital Zaria Road Kano',
         ],
     ],
 ];

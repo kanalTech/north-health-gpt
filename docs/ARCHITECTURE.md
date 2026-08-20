@@ -372,3 +372,26 @@ Scale-ready platform
 ```
 
 The prototype demonstrates feasibility. The investment period builds evidence, specialised technology and deployment readiness.
+
+
+## 16. API Provider Boundary and Secret Handling
+
+The current web prototype uses third-party Gemini services, but provider credentials are deliberately outside the public repository. `config.php` is excluded by `.gitignore`; only `config.example.php` is distributed.
+
+The provider boundary is:
+
+```text
+Browser
+  ↓
+North Health GPT backend
+  ├── ephemeral Live token/session configuration
+  └── server-side text request
+        ↓
+Third-party provider
+```
+
+This makes the current prototype auditable without exposing credentials and creates a clean migration boundary for future providers or locally hosted models. See [`API-SECURITY.md`](API-SECURITY.md).
+
+## 17. Prototype Evidence vs. Development Targets
+
+The architecture deliberately labels components as **current**, **in development**, or **planned**. In particular, North Health GPT does not claim that Gemini Live has been fine-tuned by the project, and it does not claim that the dedicated Hausa ASR/TTS or Android/offline stack already exists. The current prototype is the demonstrated starting point for the proposed engineering programme.

@@ -457,3 +457,38 @@ By the end of the proposed period, the target is a **fully functional, clinicall
 The key objective is not simply to demonstrate that an AI can speak Hausa.
 
 The objective is to demonstrate that a Hausa-native, voice-first health technology system can be made **safe, useful, measurable, resilient and scalable** for communities that conventional digital health products often fail to reach.
+
+
+# 12. API Security, Provider Independence and Evaluation Gates
+
+These cross-cutting workstreams run throughout the investment period.
+
+## API security
+
+- Keep all live provider credentials outside the public repository.
+- Maintain `config.example.php` as a placeholder-only template.
+- Run secret scanning before releases.
+- Rotate any credential immediately if exposure is suspected.
+- Keep provider-specific configuration behind a replaceable backend boundary.
+
+## Provider independence
+
+The project will not claim a dedicated Hausa ASR/TTS replacement merely because a model has been trained. A component becomes a candidate replacement only after meeting the relevant accuracy, safety, latency, language and device requirements.
+
+## Evaluation gates
+
+Every major capability should pass:
+
+```text
+Engineering test
+      ↓
+Safety/clinical review where applicable
+      ↓
+Controlled user testing
+      ↓
+Pilot evidence
+      ↓
+Scale decision
+```
+
+This protects the credibility of the repository during technical due diligence and keeps the funding programme focused on measurable proof rather than feature count.

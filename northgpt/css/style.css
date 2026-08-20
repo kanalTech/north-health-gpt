@@ -584,3 +584,300 @@ button:focus-visible, a:focus-visible, textarea:focus-visible {
     .welcome-card h2 { white-space: nowrap; font-size: 1.15rem; }
     .welcome-card p { max-width: 95%; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NORTH HEALTH GPT — VOICE LOGO AREA
+   Replaces the text chat-bubble area in voice mode.
+   The animated orb represents an AI presence with a subtle
+   "North" identity (compass triangle at top of orb).
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Container: fills the chat viewport in voice mode */
+.voice-logo-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 260px;
+    padding: 24px 16px 16px;
+    gap: 0;
+}
+
+.voice-logo-area.hidden {
+    display: none;
+}
+
+/* ── Orb wrapper ── */
+.north-logo {
+    position: relative;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-primary, #16a34a);
+}
+
+/* ── Expanding rings (behind orb, animated) ── */
+.logo-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1.5px solid currentColor;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Orb core ── */
+.logo-core {
+    position: relative;
+    z-index: 2;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-svg {
+    width: 120px;
+    height: 120px;
+    color: var(--color-primary, #16a34a);
+    transition: transform 0.3s ease;
+}
+
+/* ── State text ── */
+.logo-state-text {
+    margin: 14px 0 4px;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-size: 0.88rem;
+    color: #6b7280;
+    text-align: center;
+    letter-spacing: 0.01em;
+    min-height: 1.4em;
+    transition: color 0.3s ease;
+}
+
+/* ── Wordmark ── */
+.logo-wordmark {
+    margin: 0 0 16px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.70rem;
+    font-weight: 700;
+    color: #9ca3af;
+    letter-spacing: 0.12em;
+    text-align: center;
+}
+
+/* ── Voice referral container (map button in voice mode) ── */
+.voice-referral-container {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.voice-referral-container .referral-container {
+    width: 100%;
+}
+
+/* ════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ════════════════════════════════════ */
+
+/* IDLE — gentle breathing scale */
+@keyframes logo-breathe {
+    0%, 100% { transform: scale(1);    opacity: 1; }
+    50%       { transform: scale(1.05); opacity: 0.9; }
+}
+
+/* LISTENING — ring pulses outward */
+@keyframes logo-ring-listen {
+    0%   { transform: scale(0.85); opacity: 0.55; }
+    100% { transform: scale(1.55); opacity: 0; }
+}
+
+/* SPEAKING — faster ring expansion */
+@keyframes logo-ring-speak {
+    0%   { transform: scale(0.8);  opacity: 0.65; }
+    100% { transform: scale(1.75); opacity: 0; }
+}
+
+/* PROCESSING — slow rotation of orb */
+@keyframes logo-spin-slow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════
+   LOGO STATES
+   ════════════════════════════════════ */
+
+/* ── IDLE ── */
+.north-logo.idle .logo-core {
+    animation: logo-breathe 3.2s ease-in-out infinite;
+}
+.north-logo.idle .logo-ring {
+    display: none;
+}
+
+/* ── LISTENING ── */
+.north-logo.listening .logo-core {
+    animation: logo-breathe 1.8s ease-in-out infinite;
+}
+.north-logo.listening .ring-1 {
+    animation: logo-ring-listen 2s ease-out infinite 0s;
+}
+.north-logo.listening .ring-2 {
+    animation: logo-ring-listen 2s ease-out infinite 0.65s;
+}
+.north-logo.listening .ring-3 {
+    animation: logo-ring-listen 2s ease-out infinite 1.3s;
+}
+
+/* ── SPEAKING — more alive, faster rings ── */
+.north-logo.speaking .logo-core {
+    animation: logo-breathe 0.9s ease-in-out infinite;
+}
+.north-logo.speaking .logo-svg {
+    color: #15803d; /* slightly deeper green when Leda talks */
+}
+.north-logo.speaking .ring-1 {
+    animation: logo-ring-speak 1.2s ease-out infinite 0s;
+}
+.north-logo.speaking .ring-2 {
+    animation: logo-ring-speak 1.2s ease-out infinite 0.4s;
+}
+.north-logo.speaking .ring-3 {
+    animation: logo-ring-speak 1.2s ease-out infinite 0.8s;
+}
+
+/* ── PROCESSING ── */
+.north-logo.processing .logo-core {
+    animation: logo-spin-slow 3s linear infinite;
+}
+.north-logo.processing .ring-1 {
+    animation: logo-ring-listen 2.5s ease-out infinite 0s;
+}
+.north-logo.processing .ring-2 {
+    display: none;
+}
+.north-logo.processing .ring-3 {
+    display: none;
+}
+
+/* ── CONNECTING ── */
+.north-logo.connecting .logo-core {
+    animation: logo-breathe 1s ease-in-out infinite;
+    opacity: 0.6;
+}
+
+/* Respect reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+    .north-logo .logo-core,
+    .north-logo .logo-ring {
+        animation: none !important;
+    }
+}
+
+/* ── Hospital Map Modal ── */
+.map-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;    /* slides up from bottom on mobile */
+    justify-content: center;
+    padding: 0;
+}
+.map-modal.hidden { display: none; }
+
+.map-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    cursor: pointer;
+}
+.map-modal-inner {
+    position: relative;
+    z-index: 1;
+    background: #fff;
+    border-radius: 16px 16px 0 0;
+    width: 100%;
+    max-width: 640px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.map-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid #e5e7eb;
+    flex-shrink: 0;
+}
+.map-modal-title {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+.map-modal-close {
+    background: #f3f4f6;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+.map-modal-close:hover { background: #e5e7eb; }
+.map-modal-iframe-container {
+    flex: 1;
+    overflow: hidden;
+    min-height: 300px;
+}
+.map-modal-iframe-container iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    border: 0;
+}
+.map-modal-ext-link {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.80rem;
+    font-weight: 700;
+    color: #16a34a;
+    text-decoration: none;
+    padding: 5px 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    transition: background 0.15s ease;
+}
+.map-modal-ext-link:hover {
+    background: #dcfce7;
+    color: #15803d;
+}
+@media (min-width: 640px) {
+    .map-modal { align-items: center; padding: 16px; }
+    .map-modal-inner { border-radius: 16px; max-height: 80vh; }
+}
+
+

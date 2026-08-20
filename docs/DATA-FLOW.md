@@ -413,3 +413,16 @@ Before production/community deployment:
 The current prototype demonstrates the interaction concept.
 
 The proposed investment period is where privacy, offline resilience, clinical governance and production-grade monitoring are progressively engineered and validated.
+
+
+## 21. Public-Repository Credential Boundary
+
+The repository is distributed without `northgpt/api/config.php`. The public `config.example.php` contains placeholders only. This prevents the source repository from becoming a credential store.
+
+A deployment must keep live credentials in a server-side secret/configuration mechanism. The browser should receive only the short-lived session/token information required for the current voice flow, never the long-lived provider key.
+
+## 22. Real-Time Monitoring Readiness
+
+The long-term architecture includes privacy-preserving, publicly measurable system telemetry because real-time evidence is important for evaluating an early-stage digital public-good system. The current repository documents the data categories and privacy boundary; the full production monitoring endpoint/dashboard remains a roadmap deliverable and is not falsely presented as already complete.
+
+Candidate telemetry includes aggregate interaction counts, completion status, latency, referral category and system-health metrics. Personally identifying information and raw health conversations should not be exposed through public telemetry.

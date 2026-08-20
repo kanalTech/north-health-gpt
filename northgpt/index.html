@@ -101,11 +101,11 @@
         <main class="chat-area" id="chat-area">
             <!-- Emergency overlay (absolute, covers chat) -->
             <div class="emergency-overlay" id="emergency-overlay" role="menu" aria-label="Zabin gaggawa">
-                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Baya Numfashi')"><span aria-hidden="true">👶</span> Jariri Baya Numfashi</button>
-                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Ya Ki Shan Nono')"><span aria-hidden="true">👶</span> Jariri Ya Ki Shan Nono</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Ba Ya Numfashi')"><span aria-hidden="true">👶</span> Jariri Ba Ya Numfashi</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Ya Ƙi Shan Nono')"><span aria-hidden="true">👶</span> Jariri Ya Ƙi Shan Nono</button>
                 <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jariri Yana Karkarwa')"><span aria-hidden="true">👶</span> Jariri Yana Karkarwa</button>
-                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jinin Haihuwa Ya Ki Tsayawa')"><span aria-hidden="true">🤰</span> Jinin Haihuwa Ya Ki Tsayawa</button>
-                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Mace Tana Karkarwa')"><span aria-hidden="true">🤰</span> Mace Tana Karkarwa</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Jinin Haihuwa Ya Ƙi Tsayawa')"><span aria-hidden="true">🤰</span> Jinin Haihuwa Ya Ƙi Tsayawa</button>
+                <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Mai Juna Biyu Tana Karkarwa')"><span aria-hidden="true">🤰</span> Mai Juna Biyu Tana Karkarwa</button>
                 <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Wuya Ya Sankare')"><span aria-hidden="true">🦠</span> Wuya Ya Sankare</button>
                 <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Zazzabi Mai Tsanani')"><span aria-hidden="true">🌡️</span> Zazzabi Mai Tsanani</button>
                 <button type="button" class="emerg-item" role="menuitem" onclick="sendEmergency('Wahalar Numfashi')"><span aria-hidden="true">🫁</span> Wahalar Numfashi</button>
@@ -117,6 +117,44 @@
                     <h2>Barka Da Zuwa North Health GPT</h2>
                     <p>Neman shawara ko amsar tambaya game da kiwon lafiya a harshen Hausa.</p>
                 </div>
+
+                <!-- Voice logo area — replaces chat bubbles in voice mode -->
+                <div id="voice-logo-area" class="voice-logo-area hidden" aria-live="polite">
+                    <div id="north-logo" class="north-logo idle" aria-hidden="true">
+                        <!-- Expanding rings (animated via CSS) -->
+                        <div class="logo-ring ring-1"></div>
+                        <div class="logo-ring ring-2"></div>
+                        <div class="logo-ring ring-3"></div>
+                        <!-- Orb core -->
+                        <div class="logo-core">
+                            <svg class="logo-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <!-- Outer subtle ring -->
+                                <circle cx="60" cy="60" r="54" fill="none" stroke="currentColor" stroke-width="1" opacity="0.18"/>
+                                <!-- Main orb body -->
+                                <circle cx="60" cy="60" r="44" fill="currentColor" opacity="0.12"/>
+                                <circle cx="60" cy="60" r="44" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.55"/>
+                                <!-- North marker — small triangle pointing up -->
+                                <polygon points="60,10 55,24 65,24" fill="currentColor" opacity="0.85"/>
+                                <!-- Compass cross-points (E W S — small dots) -->
+                                <circle cx="104" cy="60" r="3.5" fill="currentColor" opacity="0.35"/>
+                                <circle cx="16"  cy="60" r="3.5" fill="currentColor" opacity="0.35"/>
+                                <circle cx="60"  cy="104" r="3.5" fill="currentColor" opacity="0.25"/>
+                                <!-- Inner AI core -->
+                                <circle cx="60" cy="60" r="18" fill="currentColor" opacity="0.22"/>
+                                <circle cx="60" cy="60" r="11" fill="currentColor" opacity="0.75"/>
+                                <!-- Center highlight -->
+                                <circle cx="60" cy="60" r="4.5" fill="white" opacity="0.9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <!-- State text -->
+                    <p id="logo-state-text" class="logo-state-text">Danna mic domin yin magana</p>
+                    <!-- Wordmark -->
+                    <p class="logo-wordmark">NORTH HEALTH GPT</p>
+                    <!-- Referral map button appears here in voice mode -->
+                    <div id="voice-referral-container" class="voice-referral-container"></div>
+                </div>
+
                 <div id="messages-list" class="messages-list"></div>
             </div>
         </main>
@@ -153,6 +191,21 @@
 
         <div class="app-footer">
             Developed by <strong>KANAL TECH</strong> (RC-8659947), Kano, Nigeria.
+        </div>
+    </div>
+
+    <!-- Hospital Map Modal -->
+    <div id="map-modal" class="map-modal hidden" role="dialog" aria-modal="true" aria-label="Taswira Asibiti">
+        <div class="map-modal-backdrop" id="map-modal-backdrop"></div>
+        <div class="map-modal-inner">
+            <div class="map-modal-header">
+                <h3 id="map-modal-title" class="map-modal-title">📍 Asibiti</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <a id="map-modal-external" class="map-modal-ext-link" href="#" target="_blank" rel="noopener" aria-label="Bude a Google Maps">Bude a Maps ↗</a>
+                    <button class="map-modal-close" id="map-modal-close" aria-label="Rufe taswirar">✕</button>
+                </div>
+            </div>
+            <div id="map-modal-iframe-container" class="map-modal-iframe-container"></div>
         </div>
     </div>
 

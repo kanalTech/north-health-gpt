@@ -16,6 +16,45 @@
 
 ---
 
+## 1.1 UNICEF Venture Fund Alignment and Open-Source Position
+
+North Health GPT is being developed for an early-stage, open-source frontier-technology funding context. The UNICEF Venture Fund currently describes its early-stage funding as up to **US$100,000 in equity-free funding** for open-source frontier technology solutions showing promising results. Its published eligibility criteria include an existing prototype with promising initial results, registration in a UNICEF programme country, potential positive impact for vulnerable children, measurable real-time data, and an open-source frontier-technology solution.
+
+Official references:
+- UNICEF Venture Fund — Funding & Support: https://www.unicefventurefund.org/funding-support
+- UNICEF Venture Fund — Apply for Funding / eligibility: https://www.unicefventurefund.org/apply-funding
+- UNICEF Venture Fund — Climate Resilience and Health call: https://www.unicefventurefund.org/call/funding-frontier-climate-tech-childrens-health
+
+### Use of proprietary AI services
+
+The current prototype uses Google Gemini services for real-time voice and text capabilities. This does **not** mean that North Health GPT is claiming ownership of or fine-tuning the Gemini foundation models. The repository's own software, health-logic architecture, referral schema, interface, integration code, evaluation tooling and future Hausa speech components are developed as separable project assets.
+
+UNICEF's published FAQ states that a funded solution must be Open Source, while not requiring every technology used by the company to be Open Source; it also states that the funded solution must be placed under an Open Source license by month six of the investment period. UNICEF further notes that end-to-end Open Source solutions may receive priority. North Health GPT therefore treats **provider independence and Open Source readiness as architecture requirements**, not as claims that a proprietary API itself is Open Source.
+
+The repository deliberately documents this distinction so a technical evaluator can see exactly what exists today, what is provided by a third-party API, and what North Health GPT intends to build and validate during the investment period.
+
+---
+
+## 1.2 Prototype Screenshots
+
+The screenshots below document the current evaluation interface. They are included as visual evidence of the working prototype and are not mockups of a future product.
+
+### 1 — Voice-first opening state
+
+![North Health GPT voice-first opening state](docs/screenshots/01-voice-opening.png)
+
+The first screen shows the voice-first North Health GPT interaction state, including the Hausa identity, Leda voice status and emergency referral presentation.
+
+### 2 — Main interaction and health-area selection
+
+![North Health GPT main interaction interface](docs/screenshots/02-main-interface.png)
+
+The second screen shows the Voice/Text mode selector, the five primary health areas, the emergency pathway and the Hausa interaction surface.
+
+These screenshots are intentionally kept in the repository so reviewers can inspect the prototype presentation alongside the source code.
+
+---
+
 ## 1. Executive Summary
 
 North Health GPT is an early-stage **voice-first digital health technology** being developed specifically for Hausa-speaking communities in Northern Nigeria.
@@ -504,7 +543,17 @@ north-health-gpt/
 │   ├── ARCHITECTURE.md             # Full six-layer technical architecture
 │   ├── HEALTH-LOGIC.md             # Five-condition health-logic architecture
 │   ├── DATA-FLOW.md                # End-to-end data and privacy flow
-│   └── ROADMAP.md                  # 12-month development, validation and pilot plan
+│   ├── ROADMAP.md                  # 12-month development, validation and pilot plan
+│   ├── API-SECURITY.md             # API-key, provider-boundary and secret-management policy
+│   ├── TESTING.md                  # Repository validation and prototype testing strategy
+│   ├── MODEL-STRATEGY.md           # Gemini prototype → model-independent Hausa architecture
+│   ├── REPOSITORY-UPDATE-2026-08-20.md # Change record and due-diligence notes
+│   └── screenshots/
+│       ├── 01-voice-opening.png    # Current prototype opening/voice state
+│       └── 02-main-interface.png   # Current prototype main interaction state
+│
+├── tests/
+│   └── validate_repository.php      # Dependency-free repository/security validation script
 │
 ├── .gitignore                      # Protects secrets and local files
 ├── LICENSE                         # MIT License
@@ -642,6 +691,7 @@ cd north-health-gpt/northgpt
 cp api/config.example.php api/config.php
 
 # Edit api/config.php locally with your credentials.
+# The repository does NOT contain api/config.php.
 # NEVER commit api/config.php.
 
 php -S localhost:8080
@@ -677,6 +727,57 @@ Before any production deployment:
 - server-side secrets must remain outside the repository;
 - logs must be reviewed for sensitive information; and
 - access-control and retention policies should be applied.
+
+---
+
+## 23.1 API and Provider Security Boundary
+
+The repository is intentionally distributed without `northgpt/api/config.php`. Only `config.example.php` is included, and it contains placeholders rather than live credentials.
+
+The current prototype uses the following security boundary:
+
+```text
+Browser
+   │
+   │ no long-lived provider secret
+   ▼
+North Health GPT PHP endpoints
+   │
+   ├── token.php  → ephemeral Gemini Live token/session configuration
+   │
+   └── chat.php   → server-side text-model request
+                     │
+                     ▼
+                Provider API
+```
+
+This separation is important because a public GitHub repository must never contain a working Google API key. A developer running the prototype locally creates the ignored `config.php` from the public template and supplies credentials locally.
+
+The repository also avoids treating a provider name as a permanent product dependency. Provider-specific code is isolated behind the application/backend boundary so that the future Hausa ASR, Hausa TTS and structured health-logic components can be tested independently.
+
+For the detailed policy and evaluator checklist, see [`docs/API-SECURITY.md`](docs/API-SECURITY.md).
+
+## 23.2 Automated Repository Validation
+
+A dependency-free validation script is included at `tests/validate_repository.php`. It checks the repository for: 
+
+- required documentation and project files;
+- the presence of the two prototype screenshots;
+- the absence of `config.php`;
+- the presence of `config.php` in `.gitignore`;
+- placeholder-only configuration examples;
+- accidental legacy testing URLs;
+- common API-key patterns;
+- valid referral-database JSON; and
+- required current demo references.
+
+Run it from the repository root with:
+
+```bash
+php tests/validate_repository.php
+```
+
+The test is deliberately static and dependency-free so an evaluator can run it without installing a framework. Additional clinical, speech, usability and pilot evaluation will be performed as the roadmap components are developed.
 
 ---
 
@@ -903,6 +1004,8 @@ Where legally, ethically and technically appropriate, the project aims to publis
 The repository should never publish personal health information, private credentials, restricted source data or model/data assets whose licensing does not permit redistribution.
 
 The proposed roadmap includes separate repositories for specialised components as they are actually developed. Those repositories are **future deliverables**, not claims that they already exist today.
+
+The model/provider transition plan is documented in [`docs/MODEL-STRATEGY.md`](docs/MODEL-STRATEGY.md), and the repository security/testing controls are documented in [`docs/API-SECURITY.md`](docs/API-SECURITY.md) and [`docs/TESTING.md`](docs/TESTING.md).
 
 ---
 
